@@ -8,76 +8,76 @@ on:
     branches: [main]
 
 jobs:
-  test-runner:
-    name: Test on ECS Runner.
-    runs-on: [self-hosted, Linux, X64, ecs]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Print runner info
-        run: |
-          echo "Runner: ${{ runner.name }}"
-          echo "OS: ${{ runner.os }}"
-          echo "Architecture: ${{ runner.arch }}"
-          echo "Working directory: ${{ runner.workspace }}"
-
-      - name: Test Node.js
-        run: |
-          node --version
-          npm --version
-
-      - name: Test Python
-        run: |
-          python3 --version
-          pip3 --version
-
-      - name: Test Java
-        run: |
-          java -version
-          mvn --version
-
-  # build-docker-image:
-  #   name: Build Docker Image
-  #   runs-on: [self-hosted, Linux, X64, cs]
+  # test-runner:
+  #   name: Test on ECS Runner.
+  #   runs-on: [self-hosted, Linux, X64, ecs]
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
 
-  #     - name: Build Docker image with Kaniko
+  #     - name: Print runner info
   #       run: |
-  #         IMAGE_NAME="test-hello-world:${{ github.sha }}"
-  #         WORKSPACE_DIR="$(pwd)"
-  #         TAR_PATH="${WORKSPACE_DIR}/${IMAGE_NAME//:/_}.tar"
-  #         # Use home directory for kaniko - user has full ownership
-  #         KANIKO_DIR="${HOME}/.kaniko"
+  #         echo "Runner: ${{ runner.name }}"
+  #         echo "OS: ${{ runner.os }}"
+  #         echo "Architecture: ${{ runner.arch }}"
+  #         echo "Working directory: ${{ runner.workspace }}"
 
-  #         # Verify Dockerfile exists
-  #         echo "=== Verifying Dockerfile location ==="
-  #         echo "Current directory: ${WORKSPACE_DIR}"
-  #         echo "Dockerfile path: ${WORKSPACE_DIR}/Dockerfile"
-  #         ls -la Dockerfile || (echo "ERROR: Dockerfile not found!" && exit 1)
-  #         echo "✓ Dockerfile found"
+  #     - name: Test Node.js
+  #       run: |
+  #         node --version
+  #         npm --version
 
-  #         echo ""
-  #         echo "=== Building image with Kaniko ==="
-  #         # Use default /kaniko directory (now writable in runner image)
-  #         # Use --cache-dir for cache location
-  #         CACHE_DIR="${WORKSPACE_DIR}/.kaniko-cache"
-  #         mkdir -p ${CACHE_DIR}
+  #     - name: Test Python
+  #       run: |
+  #         python3 --version
+  #         pip3 --version
 
-  #         /kaniko/executor \
-  #           --context ${WORKSPACE_DIR} \
-  #           --dockerfile ${WORKSPACE_DIR}/Dockerfile \
-  #           --tar-path ${TAR_PATH} \
-  #           --cache-dir ${CACHE_DIR} \
-  #           --no-push
+  #     - name: Test Java
+  #       run: |
+  #         java -version
+  #         mvn --version
 
-  #         echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
-  #         echo "TAR_PATH=${TAR_PATH}" >> $GITHUB_ENV
+  build-docker-image:
+    name: Build Docker Image
+    runs-on: [self-hosted, Linux, X64, cs]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #         echo "✓ Image built successfully!"
-  #         echo "Image saved to: ${TAR_PATH}"
+      - name: Build Docker image with Kaniko
+        run: |
+          IMAGE_NAME="test-hello-world:${{ github.sha }}"
+          WORKSPACE_DIR="$(pwd)"
+          TAR_PATH="${WORKSPACE_DIR}/${IMAGE_NAME//:/_}.tar"
+          # Use home directory for kaniko - user has full ownership
+          KANIKO_DIR="${HOME}/.kaniko"
+
+          # Verify Dockerfile exists
+          echo "=== Verifying Dockerfile location ==="
+          echo "Current directory: ${WORKSPACE_DIR}"
+          echo "Dockerfile path: ${WORKSPACE_DIR}/Dockerfile"
+          ls -la Dockerfile || (echo "ERROR: Dockerfile not found!" && exit 1)
+          echo "✓ Dockerfile found"
+
+          echo ""
+          echo "=== Building image with Kaniko ==="
+          # Use default /kaniko directory (now writable in runner image)
+          # Use --cache-dir for cache location
+          CACHE_DIR="${WORKSPACE_DIR}/.kaniko-cache"
+          mkdir -p ${CACHE_DIR}
+
+          /kaniko/executor \
+            --context ${WORKSPACE_DIR} \
+            --dockerfile ${WORKSPACE_DIR}/Dockerfile \
+            --tar-path ${TAR_PATH} \
+            --cache-dir ${CACHE_DIR} \
+            --no-push
+
+          echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
+          echo "TAR_PATH=${TAR_PATH}" >> $GITHUB_ENV
+
+          echo "✓ Image built successfully!"
+          echo "Image saved to: ${TAR_PATH}"
 
   #     - name: Print image info
   #       run: |
@@ -101,21 +101,21 @@ jobs:
   #         rm -rf ${WORKSPACE_DIR}/.kaniko-cache || true
   #         echo "✓ Cleanup complete - image tar and kaniko cache deleted"
 
-  simple-build:
-    name: Simple Build Test
-    runs-on: [ Linux, X64, cs]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # simple-build:
+  #   name: Simple Build Test
+  #   runs-on: [ Linux, X64, cs]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          echo "Installing dependencies..."
+  #     - name: Install dependencies
+  #       run: |
+  #         echo "Installing dependencies..."
 
-      - name: Run tests
-        run: |
-          echo "Running tests..."
+  #     - name: Run tests
+  #       run: |
+  #         echo "Running tests..."
 
-      - name: Build artifact
-        run: |
-          echo "Building artifact..."
+  #     - name: Build artifact
+  #       run: |
+  #         echo "Building artifact..."
