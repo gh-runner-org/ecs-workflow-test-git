@@ -9,7 +9,7 @@ on:
 
 jobs:
   test-runner:
-    name: Test on ECS Runner
+    name: Test on ECS Runner.
     runs-on: [self-hosted, Linux, X64, ecs]
     steps:
       - name: Checkout code
