@@ -47,8 +47,8 @@ jobs:
       - name: Build Docker image with Kaniko
         run: |
           IMAGE_NAME="test-hello-world:${{ github.sha }}"
-          TAR_PATH="/tmp/${IMAGE_NAME//:/_}.tar"
-          KANIKO_DIR="/tmp/kaniko"
+          TAR_PATH="./${IMAGE_NAME//:/_}.tar"
+          KANIKO_DIR="./.kaniko"
 
           # Verify Dockerfile exists
           echo "=== Verifying Dockerfile location ==="
@@ -57,7 +57,7 @@ jobs:
           ls -la Dockerfile || (echo "ERROR: Dockerfile not found!" && exit 1)
           echo "✓ Dockerfile found"
 
-          # Create writable kaniko directory
+          # Create writable kaniko directory in workspace (user-owned)
           mkdir -p ${KANIKO_DIR}
 
           echo ""
@@ -94,7 +94,7 @@ jobs:
         if: always()
         run: |
           rm -f ${TAR_PATH} || true
-          rm -rf /tmp/kaniko || true
+          rm -rf ./.kaniko || true
           echo "✓ Cleanup complete - image tar and kaniko cache deleted"
 
   simple-build:
