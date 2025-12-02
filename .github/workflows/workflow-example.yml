@@ -41,6 +41,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Verify Kaniko Installation
+        run: |
+          echo "=== Checking Kaniko Installation ==="
+          echo "Current user: $(whoami)"
+          echo "User ID: $(id -u)"
+          echo "PATH: $PATH"
+          echo ""
+          echo "=== Checking /kaniko directory ==="
+          if [ -d "/kaniko" ]; then
+            echo "/kaniko exists"
+            ls -la /kaniko/ | head -15
+            echo ""
+            if [ -f "/kaniko/executor" ]; then
+              echo "✓ Kaniko executor found at /kaniko/executor"
+              /kaniko/executor --version || echo "Could not run executor"
+            else
+              echo "✗ /kaniko/executor NOT FOUND"
+              echo "Directory contents:"
+              find /kaniko -type f 2>/dev/null | head -10 || echo "No files found in /kaniko"
+              echo ""
+              echo "This suggests the ECS task is using an old image."
+              echo "The image in ECR has Kaniko, but the running container doesn't."
+            fi
+          else
+            echo "✗ /kaniko directory does not exist"
+          fi
+          echo ""
+          echo "=== Checking PATH ==="
+          which executor || echo "executor not in PATH"
+
       - name: Build Docker image with Kaniko
         run: |
           IMAGE_NAME="test-hello-world:${{ github.sha }}"
