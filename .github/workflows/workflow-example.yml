@@ -76,20 +76,32 @@ jobs:
           fi
 
           # Create custom kaniko directory in workspace (user owns it)
-          # Use absolute path to avoid any path resolution issues
-          KANIKO_WORK_DIR="$(realpath ${WORKSPACE_DIR}/.kaniko-work)"
+          KANIKO_WORK_DIR="${WORKSPACE_DIR}/.kaniko-work"
           mkdir -p ${KANIKO_WORK_DIR}
           echo "Using kaniko work directory: ${KANIKO_WORK_DIR}"
-          echo "Directory owner: $(stat -c '%U:%G' ${KANIKO_WORK_DIR})"
+
+          # Check /kaniko permissions at runtime
+          if [ -d "/kaniko" ]; then
+            echo "=== Checking /kaniko permissions ==="
+            ls -ld /kaniko
+            echo "Current user: $(whoami)"
+            echo "Current user ID: $(id -u)"
+            echo "Can write to /kaniko? $(touch /kaniko/.test-write 2>/dev/null && echo 'yes' && rm -f /kaniko/.test-write || echo 'no - permission denied')"
+            echo "Can create directory in /kaniko? $(mkdir -p /kaniko/.test-dir 2>/dev/null && echo 'yes' && rmdir /kaniko/.test-dir 2>/dev/null || echo 'no')"
+            echo ""
+          fi
 
           # Use cache directory in workspace
           CACHE_DIR="${WORKSPACE_DIR}/.kaniko-cache"
           mkdir -p ${CACHE_DIR}
 
-          # Set KANIKO_DIR environment variable (Kaniko respects this)
+          # Set KANIKO_DIR environment variable (Kaniko should respect this)
           export KANIKO_DIR=${KANIKO_WORK_DIR}
+          echo "KANIKO_DIR environment variable: ${KANIKO_DIR}"
 
-          # Build with Kaniko using custom kaniko-dir and force flag
+          # Build with Kaniko
+          # Note: Even with custom kaniko-dir, Kaniko might still access /kaniko for the executor binary
+          # The --force flag helps but may not solve all permission issues
           ${KANIKO_EXEC} \
             --context ${WORKSPACE_DIR} \
             --dockerfile ${WORKSPACE_DIR}/Dockerfile \
