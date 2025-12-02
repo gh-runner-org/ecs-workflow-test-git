@@ -103,7 +103,7 @@ jobs:
 
   simple-build:
     name: Simple Build Test
-    runs-on: [self-hosted, Linux, X64, cs]
+    runs-on: [ Linux, X64, cs]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
