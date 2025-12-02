@@ -44,28 +44,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Docker image
+      - name: Build Docker image with Kaniko
         run: |
           IMAGE_NAME="test-hello-world:${{ github.sha }}"
-          docker build -t ${IMAGE_NAME} .
+          TAR_PATH="/tmp/${IMAGE_NAME//:/_}.tar"
+          
+          echo "=== Building image with Kaniko ==="
+          /kaniko/executor \
+            --context . \
+            --dockerfile Dockerfile \
+            --destination ${IMAGE_NAME} \
+            --tarPath ${TAR_PATH} \
+            --no-push
+          
           echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
+          echo "TAR_PATH=${TAR_PATH}" >> $GITHUB_ENV
+          
+          echo "✓ Image built successfully!"
+          echo "Image saved to: ${TAR_PATH}"
 
       - name: Print image info
         run: |
-          echo "=== Docker Image Information ==="
-          docker images ${IMAGE_NAME}
+          echo "=== Image Build Information ==="
+          echo "Image Name: ${IMAGE_NAME}"
+          echo "Tar Path: ${TAR_PATH}"
           echo ""
-          echo "=== Image Details ==="
-          docker inspect ${IMAGE_NAME} | grep -E "(Id|RepoTags|Size|Created)" | head -10
+          echo "=== Image File Size ==="
+          ls -lh ${TAR_PATH} || echo "Tar file not found"
           echo ""
-          echo "=== Testing Image ==="
-          docker run --rm ${IMAGE_NAME}
+          echo "=== Dockerfile Content ==="
+          cat Dockerfile
 
-      - name: Delete Docker image
+      - name: Cleanup
         if: always()
         run: |
-          docker rmi ${IMAGE_NAME} || true
-          echo "Image ${IMAGE_NAME} deleted"
+          rm -f ${TAR_PATH} || true
+          echo "✓ Cleanup complete - image tar deleted"
 
   simple-build:
     name: Simple Build Test
