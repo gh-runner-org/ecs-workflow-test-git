@@ -60,25 +60,29 @@ jobs:
           echo ""
           echo "=== Building image with Kaniko ==="
 
-          # Verify Kaniko is installed
-          if [ ! -f "/kaniko/executor" ]; then
-            echo "ERROR: Kaniko executor not found at /kaniko/executor"
-            echo "Checking alternative locations..."
-            which executor || echo "Kaniko not in PATH"
+          # Find Kaniko executor (check both /kaniko/executor and PATH)
+          if [ -f "/kaniko/executor" ]; then
+            KANIKO_EXEC="/kaniko/executor"
+            echo "✓ Kaniko found at /kaniko/executor"
+          elif command -v executor >/dev/null 2>&1; then
+            KANIKO_EXEC="executor"
+            echo "✓ Kaniko found in PATH as 'executor'"
+          else
+            echo "ERROR: Kaniko executor not found"
+            echo "Checking locations..."
             ls -la /kaniko/ 2>/dev/null || echo "/kaniko directory not found"
+            which executor || echo "Kaniko not in PATH"
             echo ""
-            echo "The runner image needs to be rebuilt with Kaniko installed."
-            echo "Run: cd ecs-runner-deployment && ./scripts/build-and-push.sh"
+            echo "The runner image may need to be restarted to use the new image."
+            echo "Wait a few minutes for ECS service to deploy new tasks."
             exit 1
           fi
-
-          echo "✓ Kaniko found at /kaniko/executor"
 
           # Use cache directory in workspace
           CACHE_DIR="${WORKSPACE_DIR}/.kaniko-cache"
           mkdir -p ${CACHE_DIR}
 
-          /kaniko/executor \
+          ${KANIKO_EXEC} \
             --context ${WORKSPACE_DIR} \
             --dockerfile ${WORKSPACE_DIR}/Dockerfile \
             --tar-path ${TAR_PATH} \
