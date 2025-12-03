@@ -10,17 +10,24 @@ on:
 jobs:
   test-runner:
     name: Test on ECS Runner.
-    runs-on: [self-hosted, Linux, X64, ecs]
+    runs-on: [self-hosted, linux, ecs]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Print runner info
         run: |
-          echo "Runner: ${{ runner.name }}"
+          echo "=== Runner Information ==="
+          echo "Runner ID: ${{ runner.id }}"
+          echo "Runner Name: ${{ runner.name }}"
           echo "OS: ${{ runner.os }}"
           echo "Architecture: ${{ runner.arch }}"
           echo "Working directory: ${{ runner.workspace }}"
+          echo "Runner Labels: ${{ runner.labels }}"
+          echo ""
+          echo "=== Host Information ==="
+          echo "Hostname: $(hostname)"
+          echo "Container ID: $(cat /proc/self/cgroup | grep 'docker' | head -1 | cut -d'/' -f3 | cut -c1-12 || echo 'N/A')"
       - name: Test Node.js
         run: |
           node --version
@@ -35,7 +42,7 @@ jobs:
           mvn --version
   build-docker-image:
     name: Build Docker Image
-    runs-on: [self-hosted, Linux, X64, ecs]
+    runs-on: [self-hosted, linux, ecs]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -137,10 +144,24 @@ jobs:
           echo "✓ Cleanup complete - image tar and kaniko cache deleted"
   simple-build:
     name: Simple Build Test
-    runs-on: [Linux, X64, ecs]
+    runs-on: [self-hosted, linux, ecs]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Print runner info
+        run: |
+          echo "=== Runner Information ==="
+          echo "Runner ID: ${{ runner.id }}"
+          echo "Runner Name: ${{ runner.name }}"
+          echo "OS: ${{ runner.os }}"
+          echo "Architecture: ${{ runner.arch }}"
+          echo "Working directory: ${{ runner.workspace }}"
+          echo "Runner Labels: ${{ runner.labels }}"
+          echo ""
+          echo "=== Host Information ==="
+          echo "Hostname: $(hostname)"
+          echo "Container ID: $(cat /proc/self/cgroup | grep 'docker' | head -1 | cut -d'/' -f3 | cut -c1-12 || echo 'N/A')"
 
       - name: Install dependencies
         run: |
