@@ -146,7 +146,7 @@ jobs:
     name: Simple Build Test
     runs-on: [self-hosted, linux, ecs]
     steps:
-      - name: Checkout code
+      - name: Checkout code-X
         uses: actions/checkout@v4
 
       - name: Print runner info
