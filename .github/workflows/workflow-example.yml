@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    # Use CodeBuild runner
+    # Use CodeBuild runnerr
     # Replace 'codebuild-runner-runner' with your actual CodeBuild project name
     runs-on:
       - self-hosted
